@@ -12,4 +12,5 @@ setup(
     description = ("Django Profiler Client for profiling services at djangoprofiler.com"),
     license = "GPL",
     url = "https://github.com/ailling/django-profiler-client",
+    install_requires=['requests>=0.13.1', 'simplejson=>2.3.0'],
 )

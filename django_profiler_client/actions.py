@@ -3,6 +3,7 @@ import urllib, urllib2
 
 
 from django_profiler_client import appsettings
+#import appsettings
 from django.conf import settings
 from datetime import datetime
 
@@ -18,25 +19,40 @@ def TransmitQueries(**kwargs):
     if queries is None:
         return
     
-    values = {'requesturl': kwargs.get('requesturl', 'Unknown'),
-              'viewname': kwargs.get('viewname', ''),
-              'submission_timestamp': kwargs.get('submission_timestamp', ''),
-              'app_key': kwargs.get('app_key', ''),
-              'app_domain': kwargs.get('app_domain', '')}
-    
-    for i, query in enumerate(queries):
-        sqlkey = 'sql-%d' % i
-        timekey = 'time-%d' % i
-        values[sqlkey] = query['sql']
-        values[timekey] = query['time']
-    
-    
-    try:
-        data = urllib.urlencode(values)
-        urllib2.urlopen(appsettings.QUERY_LOG_HANDLER, data)
-    except Exception, e:
-        logger.info('Error sending queries: %s' % e.message)
-        return
+    for query in queries:
+        values = {'appusername': appsettings.API_USERNAME,
+                  'appname': appsettings.APP_NAME,
+                  'viewname': kwargs.get('viewname', ''),
+                  'submission_timestamp': str(datetime.now()),
+                  'sql': query['sql'],
+                  'execution_time': query['time'],
+                  }
+        print 'sending query to %s' % appsettings.QUERY_ENDPOINT
+        
+        resp = requests.post(appsettings.QUERY_ENDPOINT,
+                             data=json.dumps(values),
+                             headers={'content-type': 'application/json'})
+        print 'response: ', resp
+        
+#    values = {'requesturl': kwargs.get('requesturl', 'Unknown'),
+#              'viewname': kwargs.get('viewname', ''),
+#              'submission_timestamp': kwargs.get('submission_timestamp', ''),
+#              'app_key': kwargs.get('app_key', ''),
+#              'app_domain': kwargs.get('app_domain', '')}
+#    
+#    for i, query in enumerate(queries):
+#        sqlkey = 'sql-%d' % i
+#        timekey = 'time-%d' % i
+#        values[sqlkey] = query['sql']
+#        values[timekey] = query['time']
+#    
+#    
+#    try:
+#        data = urllib.urlencode(values)
+#        urllib2.urlopen(appsettings.QUERY_LOG_HANDLER, data)
+#    except Exception, e:
+#        logger.info('Error sending queries: %s' % e.message)
+#        return
 
 
 def TransmitBenchmark(**kwargs):
